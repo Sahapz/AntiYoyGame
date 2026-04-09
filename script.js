@@ -1,11 +1,12 @@
 getData();
 
 
-setInterval(function () {
-    getData();
-}, 2000);
+//setInterval(function () {
+//    getData();
+//}, 1500);
 
 
+let currentPlayer = null;
 
 async function getData() {
     const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy');
@@ -13,6 +14,19 @@ async function getData() {
 
     const parent = document.querySelector('.gamePage');
     parent.innerHTML = ""
+    document.querySelector('#gameStatus').textContent = data.phase
+    document.querySelector('#gameTurn').textContent = data.turn
+    document.querySelector('#gameCurrentPlayer').textContent = data.current_player
+    currentPlayer = data.current_player;
+    document.querySelector('#gameLastWinner').textContent = data.last_winner
+
+    document.querySelector('#yourName').textContent = document.querySelector('#playerNameInput').value; // Võta ära kui giti pushid
+    for (const player of data.players) {
+        if (player.name === localStorage.getItem('player_name')) {
+            document.querySelector('#yourMoney').textContent = player.money;
+        }
+    }
+
 
     for (const hex of data.map) {
         if (hex.type !== 'impassable') {
@@ -31,7 +45,7 @@ async function getData() {
             newDiv.style.width = hex.width + 'px';
             newDiv.style.height = hex.height + 'px';
             parent.appendChild(newDiv);
-            document.querySelector('#playerMoney').textContent = data.players[0].money;
+            document.querySelector('#yourMoney').textContent = data.players[0].money;
 
             if (hex.unit_image) {
                 const unitImg = document.createElement('img');
@@ -46,6 +60,27 @@ async function getData() {
     }
 }
 
+async function getHexData(col, row) {
+    const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy');
+    const data = await response.json();
+
+    for (const hex of data.map) {
+        if (hex.col == col && hex.row == row) {
+            return hex.owner;
+        }
+    }
+
+}
+
+function notify(message) {
+    document.querySelector('#message').textContent = message;
+    document.querySelector('#messageDiv').classList.remove = 'hidden'
+
+    setTimeout(function () {
+        document.querySelector('#messageDiv').classList.remove = 'add';
+    }, 2000);
+}
+
 const joinButton = document.querySelector('#joinGame');
 
 joinButton.addEventListener('click', async function () {
@@ -56,13 +91,16 @@ joinButton.addEventListener('click', async function () {
         },
         body: JSON.stringify({
             action: 'join',
-            username: 'alice'
+            username: document.querySelector('#playerNameInput').value
         })
     });
 
     const result = await response.json();
 
     console.log(result);
+
+    localStorage.setItem('player_name', document.querySelector('#playerNameInput').value);
+
 
     localStorage.setItem('player_key', result.player_key);
 });
@@ -120,12 +158,7 @@ endTurnButton.addEventListener('click', async function () {
 
 })
 
-document.querySelector('#getId').addEventListener('click', function () {
-    console.log(localStorage.getItem('player_key'));
 
-
-
-});
 
 
 const startButton = document.querySelector('#startGame');
@@ -155,6 +188,7 @@ startButton.addEventListener('click', async function () {
     const result = await response.json();
 
     console.log(result);
+    await getData();
 });
 
 
@@ -162,6 +196,11 @@ const gamePage = document.querySelector('.gamePage');
 
 
 gamePage.addEventListener('click', async function (event) {
+
+    if (currentPlayer !== localStorage.getItem('player_name')) {
+        return;
+    }
+
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
         return;
@@ -177,43 +216,43 @@ gamePage.addEventListener('click', async function (event) {
         return;
     }
 
-    console.log('Hex clicked:', clickedCoords.col, clickedCoords.row);
+    const hexOwner = await getHexData(clickedCoords.col, clickedCoords.row);
+    console.log('Hex clicked:', clickedCoords.col, clickedCoords.row, 'Owner:', hexOwner);
 
-    if (selectedHexCol === null || selectedHexRow === null) {
-        selectedHexCol = clickedCoords.col;
-        selectedHexRow = clickedCoords.row;
-        console.log('Selected hex type:', clickedHex.getAttribute('data-type'));
-        document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
-    } else {
-        const playerKey = localStorage.getItem('player_key');
-
-        const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'move',
-                player_key: playerKey,
-                from: { col: selectedHexCol, row: selectedHexRow },
-                to: { col: clickedCoords.col, row: clickedCoords.row }
-            })
-        });
-
-        const result = await response.json();
-
-        if (result !== 'ok') {
-            selectedHexCol = null;
-            selectedHexRow = null;
+    if (hexOwner === localStorage.getItem('player_name')) {
+        if (selectedHexCol === null || selectedHexRow === null) {
+            selectedHexCol = clickedCoords.col;
+            selectedHexRow = clickedCoords.row;
+            console.log('Selected hex type:', clickedHex.getAttribute('data-type'));
             document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
+            target.style.filter = 'brightness(1.3)';
+        } else {
+            const playerKey = localStorage.getItem('player_key');
+
+            const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'move',
+                    player_key: playerKey,
+                    from: { col: selectedHexCol, row: selectedHexRow },
+                    to: { col: clickedCoords.col, row: clickedCoords.row }
+                })
+            });
+
+            const result = await response.json();
+
+            if (result !== 'ok') {
+                selectedHexCol = null;
+                selectedHexRow = null;
+                document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
+            }
+            console.log(result);
+            notify(result);
+
         }
-        console.log(result);
-
-
-
-
 
     }
-
-
 });
