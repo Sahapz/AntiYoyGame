@@ -10,7 +10,7 @@
 </head>
 
 
-<body class="bg-mist-800 text-white">
+<body class="bg-mist-800 text-white font-mono">
 
     <div id="messageDiv"
         class="hidden fixed bottom-2 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-black px-4 py-2 rounded">
@@ -37,12 +37,31 @@
                 <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Nimi: <span
                         id="yourName">Ootamas</span></span>
                 <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Raha: <span
-                        id="yourMoney">Ootamas</span></span>
+                        id="yourMoney">Ootamas</span>$</span>
                 <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Valitud:
                     <span id="selectedHex">Ootamas</span></span>
             </div>
         </div>
 
+        <div>
+            <span>Pood:</span>
+            <div class="grid grid-cols-4 gap-2 ">
+                <button
+                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Peasant</button>
+                <button
+                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Spearman</button>
+                <button
+                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Baron</button>
+                <button
+                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Knight</button>
+                <button
+                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Farm</button>
+                <button
+                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Tower</button>
+                <button
+                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Fortress</button>
+            </div>
+        </div>
         <div>
             <input type="text" id="playerNameInput"
                 class="bg-mist-700 text-white border border-mist-500 px-2 rounded py-0.5 text-lg"
@@ -64,8 +83,12 @@
 
     </div>
 
-
+    <div id="notificationDiv" class="hidden absolute bottom-0 left-0 right-0 bg-mauve-500 text-center py-2">
+        Sõnum: <span id="notification" class="font-bold"></span>
+    </div>
     <script src="script.js"></script>
 </body>
+
+
 
 </html>
