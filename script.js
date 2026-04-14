@@ -42,6 +42,7 @@ async function getData() {
     for (const player of data.players) {
         if (player.name === localStorage.getItem('player_name')) {
             document.querySelector('#yourMoney').textContent = player.money;
+            document.querySelector('#yourIncome').textContent = player.income;
         }
     }
 
@@ -159,7 +160,7 @@ buyUnitButton.addEventListener('click', async function () {
         body: JSON.stringify({
             action: 'buy',
             player_key: playerKey,
-            "type": "knight",
+            "type": buyUnitButton.getAttribute('data-type'),
             "hex": { "col": selectedHexCol, "row": selectedHexRow }
         })
     });
