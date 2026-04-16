@@ -9,12 +9,11 @@ let selectedHexCol = null;
 let selectedHexRow = null;
 
 setInterval(function () {
-    if (currentPlayer === localStorage.getItem('player_name')) {
+    if (selectedHexCol !== null && selectedHexRow !== null) {
         return;
     }
-
     getData();
-}, 1500);
+}, 3000);
 
 function notify(message) {
     document.querySelector('#notification').textContent = message;
@@ -30,6 +29,8 @@ async function getData() {
     const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy');
     const data = await response.json();
 
+    console.log('Getting Data')
+
     const parent = document.querySelector('.gamePage');
     parent.innerHTML = ""
     document.querySelector('#gameStatus').textContent = data.phase
@@ -40,9 +41,10 @@ async function getData() {
 
     document.querySelector('#yourName').textContent = localStorage.getItem('player_name')
     for (const player of data.players) {
-        if (player.name === localStorage.getItem('player_name')) {
+        if (player.username === localStorage.getItem('player_name')) {
             document.querySelector('#yourMoney').textContent = player.money;
             document.querySelector('#yourIncome').textContent = player.income;
+            document.querySelector('#yourUpkeep').textContent = player.upkeep;
         }
     }
 
@@ -137,48 +139,61 @@ joinButton.addEventListener('click', async function () {
 
 
 
+let selectedUnitType = null;
 
-const buyUnitButton = document.querySelector('#buyUnit');
+const selectUnitButton = document.querySelector('#selectUnit');
 
-buyUnitButton.addEventListener('click', async function () {
-    const playerKey = localStorage.getItem('player_key');
-    if (!playerKey) {
-        console.log(' .');
-        return;
-    }
+selectUnitButton.addEventListener('click', async function () {
+    selectedUnitType = selectUnitButton.getAttribute('data-type');
+    selectUnitButton.classList.add('scale-110');
 
-    if (selectedHexCol === null || selectedHexRow === null) {
-        notify('Vali ennem tühi ruut, mis on sinu oma!');
-        return;
-    }
+    console.log('Selected unit type:', selectedUnitType);
 
-    const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            action: 'buy',
-            player_key: playerKey,
-            "type": buyUnitButton.getAttribute('data-type'),
-            "hex": { "col": selectedHexCol, "row": selectedHexRow }
-        })
-    });
-
-    const result = await response.json();
-
-    if (result !== 'ok') {
-        if (result.error === 'cannot_afford') {
-            notify('Sul pole piisavalt raha! Sul on puudu ' + (result.cost - parseInt(document.querySelector('#yourMoney').textContent)) + '$!');
+    document.querySelector('#buyUnit').addEventListener('click', async function () {
+        const playerKey = localStorage.getItem('player_key');
+        if (!playerKey) {
+            console.log(' .');
+            return;
         }
-    }
-    console.log(result);
-    getData();
-    selectedHexCol = null;
-    selectedHexRow = null;
+
+        if (selectedHexCol === null || selectedHexRow === null) {
+            notify('Vali ennem tühi ruut, mis on sinu oma!');
+            return;
+        }
+
+        const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'buy',
+                player_key: playerKey,
+                "type": selectedUnitType,
+                "hex": { "col": selectedHexCol, "row": selectedHexRow }
+            })
+        });
+
+        const result = await response.json();
+
+        if (result !== 'ok') {
+            if (result.error === 'cannot_afford') {
+                notify('Sul pole piisavalt raha! Sul on puudu ' + (result.cost - parseInt(document.querySelector('#yourMoney').textContent)) + '$!');
+            }
+        }
+        console.log(result);
+        getData();
+        selectedHexCol = null;
+        selectedHexRow = null;
+        selectedUnitType = null
+        selectUnitButton.classList.remove('scale-110');
+
+    });
 
 
 });
+
+
 
 const endTurnButton = document.querySelector('#endTurn');
 
