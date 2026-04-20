@@ -10,14 +10,14 @@
 </head>
 
 
-<body class="bg-mist-800 text-white font-mono">
+<body class="bg-mist-800 text-white font-mono flex flex-col">
 
     <div id="messageDiv"
         class="hidden fixed bottom-2 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-black px-4 py-2 rounded">
         <span id="message"></span>
     </div>
 
-    <div class="flex h-auto w-full bg-mist-950 px-2 py-2 gap-2">
+    <div class="flex h-auto w-full bg-mist-950 px-2 py-2 gap-2 grid grid-cols-5">
         <div>
             <span>Mänguandmed:</span>
             <div class="grid grid-cols-2 text-sm gap-2">
@@ -31,61 +31,61 @@
                     võitja: <span id="gameLastWinner">Ootamas</span></span>
             </div>
         </div>
-        <div>
-            <span>Sinu andmed:</span>
-            <div class="grid grid-cols-3 text-sm gap-2">
-                <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Nimi: <span
-                        id="yourName">Ootamas</span></span>
-                <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Raha: <span
-                        id="yourMoney">Ootamas</span>$</span>
-                <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Sissetulek:
-                    <span id="yourIncome">null</span>$</span>
-                <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Kulu:
-                    <span id="yourUpkeep">null</span>$</span>
-                <span class="bg-mauve-950 text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 ">Valitud:
-                    <span id="selectedHex">Ootamas</span></span>
-            </div>
+        <div id="gameJoinDiv">
+            <span>Mänguga liitumine:</span>
+            <input type="text" id="playerNameInput"
+                class="bg-mauve-950 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg"
+                placeholder="mängija nimi">
+            <button
+                class="bg-green-950 text-green-400 border border-green-400 px-2 rounded py-0.5 text-lg hover:text-green-300 hover:border-green-300 hover:cursor-pointer"
+                id="joinGame">Liitu</button>
         </div>
 
-        <div>
+
+
+        <div id="shopDiv">
             <span>Pood:</span>
-            <div class="grid grid-cols-4 gap-2 ">
-                <button id="selectUnit" data-type="peasant" title=""
-                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Peasant</button>
-                <button id="selectUnit" data-type="spearman"
-                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Spearman</button>
-                <button id="selectUnit" data-type="baron"
-                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Baron</button>
-                <button id="selectUnit" data-type="knight"
-                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Knight</button>
-                <button id="selectUnit" data-type="farm"
-                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Farm</button>
-                <button id="selectUnit" data-type="tower"
-                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Tower</button>
-                <button id="selectUnit" data-type="fortress"
-                    class="bg-mauve-900 text-mauve-400 border border-mauve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer">Fortress</button>
+            <div class="grid grid-cols-3 text-sm gap-2">
+                <select class="bg-mauve-950 col-span-2 w-full border text-lg text-mauve-400 rounded border-clifford-400"
+                    name="unitType" id="unitType">
+                    <option value="peasant">#1│Peasant│10$│upkeep: 2│Empty land, trees</option>
+                    <option value="spearman">#2│Spearman│20$│upkeep: 6│Above + peasants</option>
+                    <option value="baron">#3│Baron│30$│upkeep: 18│Above + spearmen, towers</option>
+                    <option value="knight">#4│Knight│40$│upkeep: 36│Above + barons, fortresses</option>
+                    <option disabled value="null">Ehitised:</option>
+                    <option value="farm">#1│Farm│12$ + 2$ per farm you own│+4 income</option>
+                    <option value="tower">#2│Tower│15$│Defends adjacent hexes at level 2</option>
+                    <option value="fortress">#3│Fortress│35$│Defends adjacent hexes at level 3</option>
+                </select>
                 <button id="buyUnit" data-type="fortress"
                     class="bg-green-950 text-green-400 border border-green-400 px-2 rounded py-0.5 text-lg hover:text-green-300 hover:border-green-300 hover:cursor-pointer">Buy</button>
             </div>
         </div>
+
         <div>
-            <input type="text" id="playerNameInput"
-                class="bg-mist-700 text-white border border-mist-500 px-2 rounded py-0.5 text-lg"
-                placeholder="mängija nimi">
-            <button class="bg-green-950 text-green-400 border border-green-400 px-2 rounded py-0.5 text-lg "
-                id="joinGame">Liitu</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-            <button class="bg-blue-900 text-blue-400 border border-blue-400 px-2 rounded py-0.5 text-lg"
-                id="startGame">Alusta</button>
-            <button class="bg-blue-900 text-blue-400 border border-blue-400 px-2 rounded py-0.5 text-lg"
-                id="endTurn">Lõpeta käik</button>
-            <button class="bg-blue-900 text-blue-400 border border-blue-400 px-2 rounded py-0.5 text-lg"
-                id="buyUnit">Osta üksus</button>
+            <span>Controll Kesktee:</span>
+            <div class="grid grid-cols-3 text-sm gap-2">
+                <button
+                    class="bg-mauve-950 text-mauve-400 border border-nayve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer"
+                    id="startGame">Alusta</button>
+                <button
+                    class="bg-mauve-950 text-mauve-400 border border-nayve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer"
+                    id="endTurn">Lõpeta käik</button>
+                <button
+                    class="bg-mauve-950 text-mauve-400 border border-nayve-400 px-2 rounded py-0.5 text-lg hover:text-mauve-300 hover:border-mauve-300 hover:cursor-pointer"
+                    id="Surrender">Alla anna</button>
+            </div>
         </div>
 
     </div>
-    <div class="gamePage">
+    <div class="flex flex-grow">
+        <div id="gamePage" class="m-20 relative scale-120" style="width: 600px; height: 490px;">
+
+        </div>
+
+        <div class="border  border-mauve-600 p-2 flex flex-col gap-2 flex w-70 h-150" id="dataPage">
+
+        </div>
 
     </div>
 

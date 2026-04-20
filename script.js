@@ -31,21 +31,48 @@ async function getData() {
 
     console.log('Getting Data')
 
-    const parent = document.querySelector('.gamePage');
+    const parent = document.querySelector('#gamePage');
     parent.innerHTML = ""
+    document.getElementById("dataPage").innerHTML = ""
     document.querySelector('#gameStatus').textContent = data.phase
+
+    if (data.phase === 'lobby') {
+        document.querySelector('#gameJoinDiv').classList.remove('hidden');
+        document.querySelector('#shopDiv').classList.add('hidden');
+        document.querySelector('#shopDiv').classList.remove('col-span-2');
+    } else {
+        document.querySelector('#gameJoinDiv').classList.add('hidden');
+        document.querySelector('#shopDiv').classList.remove('hidden');
+        document.querySelector('#shopDiv').classList.add('col-span-2');
+    }
+
     document.querySelector('#gameTurn').textContent = data.turn
     document.querySelector('#gameCurrentPlayer').textContent = data.current_player
     currentPlayer = data.current_player;
     document.querySelector('#gameLastWinner').textContent = data.last_winner
 
-    document.querySelector('#yourName').textContent = localStorage.getItem('player_name')
+
     for (const player of data.players) {
+
+        let isMe = "";
         if (player.username === localStorage.getItem('player_name')) {
-            document.querySelector('#yourMoney').textContent = player.money;
-            document.querySelector('#yourIncome').textContent = player.income;
-            document.querySelector('#yourUpkeep').textContent = player.upkeep;
+            isMe = " text-green-400";
         }
+
+        const container = document.createElement("div");
+
+        container.className = "bg-mauve-950  flex flex-col text-mauve-400 border border-clifford-400 px-2 rounded py-0.5 text-sm";
+
+        container.innerHTML = `
+                <span class="text-xl`+ isMe + ` ">` + player.username + `</span>
+                <div class="flex `+ isMe + ` flex-grow gap-2">
+                <div>Raha: <span>` + player.money + `</span></div>
+                <div>Sissetulek: <span>` + player.income + `</span></div>
+                <div>Kulu: <span>` + player.upkeep + `</span></div>
+            </div>
+            `;
+
+        document.getElementById("dataPage").appendChild(container);
     }
 
     if (currentPlayer === localStorage.getItem('player_name')) {
@@ -74,7 +101,6 @@ async function getData() {
             newDiv.style.width = hex.width + 'px';
             newDiv.style.height = hex.height + 'px';
             parent.appendChild(newDiv);
-            document.querySelector('#yourMoney').textContent = data.players[0].money;
 
 
             if (hex.building_image) {
@@ -83,6 +109,8 @@ async function getData() {
                 unitImg.style.position = 'absolute';
                 unitImg.style.left = hex.x + 'px';
                 unitImg.style.top = hex.y + 'px';
+                unitImg.style.width = hex.width + 'px';
+                unitImg.style.height = hex.height + 'px';
                 parent.appendChild(unitImg);
                 unitImg.style.pointerEvents = 'none';
             }
@@ -93,6 +121,8 @@ async function getData() {
                 unitImg.style.position = 'absolute';
                 unitImg.style.left = hex.x + 'px';
                 unitImg.style.top = hex.y + 'px';
+                unitImg.style.width = hex.width + 'px';
+                unitImg.style.height = hex.height + 'px';
                 parent.appendChild(unitImg);
                 unitImg.style.pointerEvents = 'none';
             }
@@ -139,57 +169,39 @@ joinButton.addEventListener('click', async function () {
 
 
 
-let selectedUnitType = null;
 
-const selectUnitButton = document.querySelector('#selectUnit');
+document.querySelector('#buyUnit').addEventListener('click', async function () {
+    const playerKey = localStorage.getItem('player_key');
 
-selectUnitButton.addEventListener('click', async function () {
-    selectedUnitType = selectUnitButton.getAttribute('data-type');
-    selectUnitButton.classList.add('scale-110');
+    if (selectedHexCol === null || selectedHexRow === null) {
+        notify('Vali ennem tühi ruut, mis on sinu oma!');
+        return;
+    }
 
-    console.log('Selected unit type:', selectedUnitType);
-
-    document.querySelector('#buyUnit').addEventListener('click', async function () {
-        const playerKey = localStorage.getItem('player_key');
-        if (!playerKey) {
-            console.log(' .');
-            return;
-        }
-
-        if (selectedHexCol === null || selectedHexRow === null) {
-            notify('Vali ennem tühi ruut, mis on sinu oma!');
-            return;
-        }
-
-        const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: 'buy',
-                player_key: playerKey,
-                "type": selectedUnitType,
-                "hex": { "col": selectedHexCol, "row": selectedHexRow }
-            })
-        });
-
-        const result = await response.json();
-
-        if (result !== 'ok') {
-            if (result.error === 'cannot_afford') {
-                notify('Sul pole piisavalt raha! Sul on puudu ' + (result.cost - parseInt(document.querySelector('#yourMoney').textContent)) + '$!');
-            }
-        }
-        console.log(result);
-        getData();
-        selectedHexCol = null;
-        selectedHexRow = null;
-        selectedUnitType = null
-        selectUnitButton.classList.remove('scale-110');
-
+    const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'buy',
+            player_key: playerKey,
+            "type": document.querySelector('#unitType').value,
+            "hex": { "col": selectedHexCol, "row": selectedHexRow }
+        })
     });
 
+    const result = await response.json();
+
+    if (result !== 'ok') {
+        if (result.error === 'cannot_afford') {
+            notify('Sul pole piisavalt raha! Sul on puudu ' + (result.cost - parseInt(document.querySelector('#yourMoney').textContent)) + '$!');
+        }
+    }
+    console.log(result);
+    getData();
+    selectedHexCol = null;
+    selectedHexRow = null;
 
 });
 
@@ -245,11 +257,40 @@ startButton.addEventListener('click', async function () {
     const result = await response.json();
 
     console.log(result);
+    if (result.error === 'need_1_to_6_players') {
+        notify('Mängu alustamiseks peab olema vähemalt 1 mängija!');
+    }
     await getData();
 });
 
 
-const gamePage = document.querySelector('.gamePage');
+const surrender = document.querySelector('#Surrender');
+
+surrender.addEventListener('click', async function () {
+    const playerKey = localStorage.getItem('player_key');
+
+    const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'surrender',
+            player_key: playerKey
+        })
+    });
+
+    const result = await response.json();
+
+    console.log(result);
+    if (result === 'ok') {
+        notify('Sa andsid alla! (Loodsin sinust paremat)');
+    }
+
+    await getData();
+});
+
+const gamePage = document.querySelector('#gamePage');
 
 
 gamePage.addEventListener('click', async function (event) {
@@ -289,44 +330,46 @@ gamePage.addEventListener('click', async function (event) {
             selectedHexCol = clickedCoords.col;
             selectedHexRow = clickedCoords.row;
             console.log('Successfully selected hex type:', clickedHex.getAttribute('data-type'));
-            document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
+            // document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
             target.style.filter = 'brightness(1.3)';
         }
     } else {
-        if (!hexData.unit && !hexData.building) {
-            console.log('Trying to move from', selectedHexCol, selectedHexRow, 'to', clickedCoords.col, clickedCoords.row);
-            const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'move',
-                    player_key: playerKey,
-                    from: { col: selectedHexCol, row: selectedHexRow },
-                    to: { col: clickedCoords.col, row: clickedCoords.row }
-                })
-            });
+        //if (!hexData.unit && (!hexData.building)) {
+        console.log('Trying to move from', selectedHexCol, selectedHexRow, 'to', clickedCoords.col, clickedCoords.row);
+        const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'move',
+                player_key: playerKey,
+                from: { col: selectedHexCol, row: selectedHexRow },
+                to: { col: clickedCoords.col, row: clickedCoords.row }
+            })
+        });
 
-            const result = await response.json();
+        const result = await response.json();
 
-            if (result !== 'ok') {
-                selectedHexCol = null;
-                selectedHexRow = null;
-                document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
-                if (result.error === 'unit_already_moved') {
-                    notify('See mehikene juba liikus!');
-                } else if (result.error === 'no_unit') {
-                    notify('Sellel ruudul ei ole üksust!');
-                } else if (result === 'unreachable') {
-                    notify('Sa ei saa nii kaugele minna!');
-                }
+        if (result !== 'ok') {
+            selectedHexCol = null;
+            selectedHexRow = null;
+            //document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
+            if (result.error === 'unit_already_moved') {
+                notify('See mehikene juba liikus!');
+            } else if (result.error === 'no_unit') {
+                notify('Sellel ruudul ei ole üksust!');
+            } else if (result === 'unreachable') {
+                notify('Sa ei saa nii kaugele minna!');
+            } else if (result.error === 'invalid_move') {
+                notify('See ruut on kaitstud!');
             }
-
-            console.log('lINE 261:' + JSON.stringify(result));
-        } else {
-            notify('Sellel ruudul on midagi ees!');
         }
+
+        console.log('lINE 261:' + JSON.stringify(result));
+        //} else {
+        //  notify('Sellel ruudul on midagi ees!');
+        //}
 
 
 
