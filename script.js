@@ -12,6 +12,7 @@ setInterval(function () {
     if (selectedHexCol !== null && selectedHexRow !== null) {
         return;
     }
+
     getData();
 }, 3000);
 
@@ -329,13 +330,13 @@ gamePage.addEventListener('click', async function (event) {
         if (hexData.owner === localStorage.getItem('player_name')) {
             selectedHexCol = clickedCoords.col;
             selectedHexRow = clickedCoords.row;
-            console.log('Successfully selected hex type:', clickedHex.getAttribute('data-type'));
+            console.log('selected hex type:', clickedHex.getAttribute('data-type'));
             // document.querySelector('#selectedHex').textContent = selectedHexCol + '-' + selectedHexRow;
             target.style.filter = 'brightness(1.3)';
         }
     } else {
         //if (!hexData.unit && (!hexData.building)) {
-        console.log('Trying to move from', selectedHexCol, selectedHexRow, 'to', clickedCoords.col, clickedCoords.row);
+        console.log('move from', selectedHexCol, selectedHexRow, 'to', clickedCoords.col, clickedCoords.row);
         const response = await fetch('https://tinkr.tech/sdb/ander/antiyoy', {
             method: 'POST',
             headers: {
